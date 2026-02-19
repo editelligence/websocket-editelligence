@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>P2P Real-Time Editor</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    textarea { width: 100%; height: 300px; margin-top: 10px; }
+    input, button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>P2P Real-Time Editor</h2>
+  <p>Host: Upload file and share your ID with your friend.</p>
+  <input type="file" id="fileInput">
+  <br>
+  <textarea id="editor" placeholder="Start typing..."></textarea>
+  <br>
+  <button id="download">Download File</button>
+  <br><br>
+  <input type="text" id="hostIdInput" placeholder="Enter Host ID to connect">
+  <button id="connectBtn">Connect</button>
+
+  <script type="module">
+    import Peer from 'https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js';
+
+    const editor = document.getElementById('editor');
+    const downloadBtn = document.getElementById('download');
+    const fileInput = document.getElementById('fileInput');
+    const hostIdInput = document.getElementById('hostIdInput');
+    const connectBtn = document.getElementById('connectBtn');
+
+    // Create Peer (auto ID)
+    const peer = new Peer();
+
+    let conn = null; // Connection object
+
+    peer.on('open', id => {
+      console.log("Your Peer ID:", id);
+      alert("Your Peer ID: " + id + "\nShare this with your friend if you are the host.");
+    });
+
+    // If someone connects to you (you are host)
+    peer.on('connection', c => {
+      conn = c;
+      console.log("Friend connected:", c.peer);
+
+      conn.on('data', data => {
+        if(data.type === 'update') editor.value = data.content;
+      });
+    });
+
+    // File upload (host only)
+    fileInput.onchange = async e => {
+      const file = e.target.files[0];
+      if(!file) return;
+      editor.value = await file.text();
+    };
+
+    // Send editor changes to peer
+    editor.addEventListener('input', () => {
+      if(conn && conn.open) conn.send({type: 'update', content: editor.value});
+    });
+
+    // Download current text
+    downloadBtn.onclick = () => {
+      const blob = new Blob([editor.value], {type: 'text/plain'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'file.txt';
+      link.click();
+    };
+
+    // Connect as client to host
+    connectBtn.onclick = () => {
+      const hostId = hostIdInput.value.trim();
+      if(!hostId) return alert("Enter host ID!");
+      conn = peer.connect(hostId);
+      conn.on('open', () => {
+        console.log("Connected to host:", hostId);
+
+        // Receive updates from host
+        conn.on('data', data => {
+          if(data.type === 'update') editor.value = data.content;
+        });
+
+        // Optional: Send own edits (if you want bidirectional editing)
+        editor.addEventListener('input', () => {
+          if(conn && conn.open) conn.send({type: 'update', content: editor.value});
+        });
+      });
+    };
+  </script>
+</body>
+</html>
