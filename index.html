@@ -1,95 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>P2P Real-Time Editor</title>
-  <style>
-    body { font-family: sans-serif; margin: 20px; }
-    textarea { width: 100%; height: 300px; margin-top: 10px; }
-    input, button { margin-top: 10px; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CollabShare — Real-Time File Collaboration</title>
+  <meta name="description" content="Share files instantly with anyone. Real-time collaborative file viewing and editing with zero setup required." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>P2P Real-Time Editor</h2>
-  <p>Host: Upload file and share your ID with your friend.</p>
-  <input type="file" id="fileInput">
-  <br>
-  <textarea id="editor" placeholder="Start typing..."></textarea>
-  <br>
-  <button id="download">Download File</button>
-  <br><br>
-  <input type="text" id="hostIdInput" placeholder="Enter Host ID to connect">
-  <button id="connectBtn">Connect</button>
 
-  <script type="module">
-    import Peer from 'https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js';
+  <!-- ═══════════════════ LANDING SCREEN ═══════════════════ -->
+  <div id="screen-landing" class="screen active">
+    <div class="bg-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
 
-    const editor = document.getElementById('editor');
-    const downloadBtn = document.getElementById('download');
-    const fileInput = document.getElementById('fileInput');
-    const hostIdInput = document.getElementById('hostIdInput');
-    const connectBtn = document.getElementById('connectBtn');
+    <nav class="nav">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="url(#logoGrad)"/>
+          <path d="M8 14l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
+              <stop offset="0%" stop-color="#7c3aed"/>
+              <stop offset="100%" stop-color="#2563eb"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>CollabShare</span>
+      </div>
+      <div class="nav-badge">P2P · No Server</div>
+    </nav>
 
-    // Create Peer (auto ID)
-    const peer = new Peer();
+    <main class="landing-main">
+      <div class="hero">
+        <div class="hero-tag">
+          <span class="pulse-dot"></span>
+          Peer-to-Peer · End-to-End Direct
+        </div>
+        <h1 class="hero-title">
+          Share Files.<br/>
+          <span class="gradient-text">Collaborate in Real‑Time.</span>
+        </h1>
+        <p class="hero-sub">
+          Upload any file, share a 6-character code, and collaborate instantly.<br/>
+          Changes sync live across all connected peers — no account needed.
+        </p>
+      </div>
 
-    let conn = null; // Connection object
+      <div class="action-cards">
+        <!-- CREATE ROOM -->
+        <div class="card card-create" id="card-create">
+          <div class="card-icon-wrap">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2>Create a Room</h2>
+          <p>Upload a file and get a shareable room code instantly.</p>
 
-    peer.on('open', id => {
-      console.log("Your Peer ID:", id);
-      alert("Your Peer ID: " + id + "\nShare this with your friend if you are the host.");
-    });
+          <div class="drop-zone" id="drop-zone">
+            <input type="file" id="file-input" hidden />
+            <div class="drop-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 8l-4-4-4 4M12 4v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p class="drop-text">Drop your file here<br/><span>or click to browse</span></p>
+            <div class="drop-hint">Supports text, images, PDFs, code files &amp; more</div>
+          </div>
 
-    // If someone connects to you (you are host)
-    peer.on('connection', c => {
-      conn = c;
-      console.log("Friend connected:", c.peer);
+          <div class="file-selected hidden" id="file-selected">
+            <div class="file-thumb" id="file-thumb"></div>
+            <div class="file-info">
+              <span class="file-name" id="file-name-display"></span>
+              <span class="file-size" id="file-size-display"></span>
+            </div>
+            <button class="btn-clear" id="btn-clear-file" title="Remove file">×</button>
+          </div>
 
-      conn.on('data', data => {
-        if(data.type === 'update') editor.value = data.content;
-      });
-    });
+          <button class="btn btn-primary" id="btn-create" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Create Room &amp; Share
+          </button>
+        </div>
 
-    // File upload (host only)
-    fileInput.onchange = async e => {
-      const file = e.target.files[0];
-      if(!file) return;
-      editor.value = await file.text();
-    };
+        <div class="card-divider">
+          <span>or</span>
+        </div>
 
-    // Send editor changes to peer
-    editor.addEventListener('input', () => {
-      if(conn && conn.open) conn.send({type: 'update', content: editor.value});
-    });
+        <!-- JOIN ROOM -->
+        <div class="card card-join" id="card-join">
+          <div class="card-icon-wrap card-icon-join">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <polyline points="10 17 15 12 10 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="15" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2>Join a Room</h2>
+          <p>Enter the 6-character code to access the shared file.</p>
 
-    // Download current text
-    downloadBtn.onclick = () => {
-      const blob = new Blob([editor.value], {type: 'text/plain'});
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'file.txt';
-      link.click();
-    };
+          <div class="code-input-wrap">
+            <label for="room-code-input">Room Code</label>
+            <div class="code-boxes" id="code-boxes">
+              <input class="code-box" maxlength="1" data-index="0" id="code-0" autocomplete="off" spellcheck="false"/>
+              <input class="code-box" maxlength="1" data-index="1" id="code-1" autocomplete="off" spellcheck="false"/>
+              <input class="code-box" maxlength="1" data-index="2" id="code-2" autocomplete="off" spellcheck="false"/>
+              <span class="code-sep">·</span>
+              <input class="code-box" maxlength="1" data-index="3" id="code-3" autocomplete="off" spellcheck="false"/>
+              <input class="code-box" maxlength="1" data-index="4" id="code-4" autocomplete="off" spellcheck="false"/>
+              <input class="code-box" maxlength="1" data-index="5" id="code-5" autocomplete="off" spellcheck="false"/>
+            </div>
+          </div>
 
-    // Connect as client to host
-    connectBtn.onclick = () => {
-      const hostId = hostIdInput.value.trim();
-      if(!hostId) return alert("Enter host ID!");
-      conn = peer.connect(hostId);
-      conn.on('open', () => {
-        console.log("Connected to host:", hostId);
+          <button class="btn btn-secondary" id="btn-join" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <polyline points="12 8 16 12 12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Join Room
+          </button>
 
-        // Receive updates from host
-        conn.on('data', data => {
-          if(data.type === 'update') editor.value = data.content;
-        });
+          <div class="join-status hidden" id="join-status">
+            <div class="spinner"></div>
+            <span id="join-status-text">Connecting to peer…</span>
+          </div>
+        </div>
+      </div>
 
-        // Optional: Send own edits (if you want bidirectional editing)
-        editor.addEventListener('input', () => {
-          if(conn && conn.open) conn.send({type: 'update', content: editor.value});
-        });
-      });
-    };
-  </script>
+      <div class="features-row">
+        <div class="feature">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>Direct P2P - files never touch a server</span>
+        </div>
+        <div class="feature">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span>Real-time sync in milliseconds</span>
+        </div>
+        <div class="feature">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span>Works in any modern browser</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ═══════════════════ ROOM SCREEN ═══════════════════ -->
+  <div id="screen-room" class="screen">
+    <div class="room-header">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="url(#logoGrad2)"/>
+          <path d="M8 14l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="logoGrad2" x1="0" y1="0" x2="28" y2="28">
+              <stop offset="0%" stop-color="#7c3aed"/>
+              <stop offset="100%" stop-color="#2563eb"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>CollabShare</span>
+      </div>
+
+      <div class="room-meta">
+        <div class="room-code-badge">
+          <span class="room-code-label">Room Code</span>
+          <span class="room-code-value" id="room-code-display">——</span>
+          <button class="btn-copy" id="btn-copy-code" title="Copy code">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+        </div>
+        <div class="peers-indicator">
+          <span class="peer-dot active"></span>
+          <span id="peer-count">1 peer</span>
+        </div>
+      </div>
+
+      <div class="room-actions">
+        <button class="btn btn-sm" id="btn-change-file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Change File
+        </button>
+        <input type="file" id="file-input-room" hidden />
+        <button class="btn btn-sm btn-danger" id="btn-leave">Leave</button>
+      </div>
+    </div>
+
+    <div class="room-body">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-file-info">
+          <div class="sidebar-file-icon" id="sidebar-file-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5"/></svg>
+          </div>
+          <div>
+            <div class="sidebar-file-name" id="sidebar-file-name">No file</div>
+            <div class="sidebar-file-size" id="sidebar-file-size">—</div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Status</div>
+          <div class="status-item">
+            <span class="status-dot" id="conn-dot"></span>
+            <span id="conn-status">Waiting…</span>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Connected Peers</div>
+          <div id="peers-list" class="peers-list">
+            <div class="peer-item self">
+              <span class="peer-avatar">You</span>
+              <span class="peer-label">You (Host)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Actions</div>
+          <button class="btn-sidebar-action" id="btn-download">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Download File
+          </button>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Share Link</div>
+          <div class="share-link-box">
+            <input type="text" class="share-link-input" id="share-link-input" readonly />
+            <button class="btn-copy-link" id="btn-copy-link" title="Copy link">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- VIEWER PANEL -->
+      <section class="viewer-panel">
+        <div class="viewer-toolbar">
+          <div class="viewer-file-label" id="viewer-file-label">No file loaded</div>
+          <div class="viewer-toolbar-right">
+            <div class="sync-indicator hidden" id="sync-indicator">
+              <div class="spinner-small"></div>
+              <span>Syncing…</span>
+            </div>
+            <div class="save-indicator hidden" id="save-indicator">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Saved</span>
+            </div>
+            <div class="viewer-mode-tabs">
+              <button class="mode-tab active" data-mode="view" id="tab-view">View</button>
+              <button class="mode-tab" data-mode="edit" id="tab-edit">Edit</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="viewer-content" id="viewer-content">
+          <div class="viewer-empty" id="viewer-empty">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" opacity="0.3">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1"/>
+              <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1"/>
+            </svg>
+            <p>Waiting for file…</p>
+          </div>
+
+          <!-- Text / Code viewer -->
+          <div class="text-viewer hidden" id="text-viewer">
+            <textarea class="text-editor" id="text-editor" spellcheck="false" placeholder="File content will appear here…"></textarea>
+          </div>
+
+          <!-- Image viewer -->
+          <div class="image-viewer hidden" id="image-viewer">
+            <img id="image-preview" alt="Shared image" />
+          </div>
+
+          <!-- PDF viewer -->
+          <div class="pdf-viewer hidden" id="pdf-viewer">
+            <embed id="pdf-embed" type="application/pdf" />
+          </div>
+
+          <!-- Binary / unsupported viewer -->
+          <div class="binary-viewer hidden" id="binary-viewer">
+            <div class="binary-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5"/>
+                <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div class="binary-info">
+              <h3 id="binary-file-name">file.bin</h3>
+              <p id="binary-file-desc">This file type cannot be previewed directly.</p>
+              <button class="btn btn-primary" id="btn-download-binary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Download File
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ TOAST ═══════════════════ -->
+  <div id="toast-container"></div>
+
+  <!-- ═══════════════════ MODAL ═══════════════════ -->
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <div class="modal" id="modal">
+      <div class="modal-icon" id="modal-icon"></div>
+      <h2 id="modal-title">Modal</h2>
+      <p id="modal-body">Content</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="modal-confirm">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PeerJS CDN -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
