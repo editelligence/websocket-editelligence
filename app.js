@@ -1,8 +1,8 @@
 'use strict';
 // ─── CONSTANTS & SECURITY ───
 const SEC = {
-  MAX_FILE_SIZE: 5 * 1024 * 1024, MAX_FILES: 20, MAX_CHAT_LEN: 500, MAX_NAME_LEN: 20, MAX_FILENAME_LEN: 80, RATE_LIMIT_PER_SEC: 120,
-  ALLOWED_TYPES: new Set(['sync', 'patch', 'cursor', 'file-open', 'file-list', 'file-delete', 'file-rename', 'permission-change', 'kick', 'chat', 'peer-info', 'request-workspace', 'workspace-data', 'settings-update', 'ack', 'canvas-draw', 'canvas-state', 'canvas-cursor', 'slide-update', 'dot-update'])
+    MAX_FILE_SIZE: 5 * 1024 * 1024, MAX_FILES: 20, MAX_CHAT_LEN: 500, MAX_NAME_LEN: 20, MAX_FILENAME_LEN: 80, RATE_LIMIT_PER_SEC: 120,
+    ALLOWED_TYPES: new Set(['sync', 'patch', 'cursor', 'file-open', 'file-list', 'file-delete', 'file-rename', 'permission-change', 'kick', 'chat', 'peer-info', 'request-workspace', 'workspace-data', 'settings-update', 'ack', 'canvas-draw', 'canvas-state', 'canvas-cursor', 'slide-update', 'dot-update'])
 };
 const LANG_MAP = { js: 'javascript', jsx: 'javascript', ts: 'typescript', tsx: 'typescript', html: 'html', htm: 'html', css: 'css', scss: 'css', less: 'css', json: 'json', yaml: 'yaml', yml: 'yaml', md: 'markdown', py: 'python', rb: 'ruby', go: 'go', rs: 'rust', java: 'java', c: 'c', cpp: 'cpp', cs: 'csharp', php: 'php', sh: 'bash', bash: 'bash', sql: 'sql', xml: 'xml', vue: 'html', svelte: 'html', toml: 'ini', ini: 'ini', env: 'plaintext', txt: 'plaintext', log: 'plaintext' };
 const LANG_COLORS = { javascript: '#f7df1e', typescript: '#3178c6', html: '#e34c26', css: '#264de4', python: '#3572A5', json: '#cbcb41', markdown: '#083fa1', go: '#00ADD8', rust: '#dea584', java: '#b07219', cpp: '#f34b7d', ruby: '#701516', sql: '#e38c00', bash: '#4EAA25', plaintext: '#6e7681' };
@@ -12,21 +12,21 @@ function getLangColor(l) { return LANG_COLORS[l] || '#6e7681' }
 
 // ─── STATE ───
 const state = {
-  peer: null, conns: {}, role: null, roomCode: null, myId: null, myName: 'Anonymous', myColor: PEER_COLORS[0],
-  peers: {}, workspace: {}, activeFile: null, editor: null, decorations: {}, rateLimits: {},
-  settings: { downloadAllowed: true, defaultRole: 'editor' }, chat: [], syncDebounce: null, cursorDebounce: null,
-  suppressChange: false, localVersion: {}, rightPanelOpen: true, contextTarget: null, monacoReady: false,
-  currentView: 'editor',
-  // Canvas state
-  canvas: {
-    tool: 'select', color: '#a78bfa', strokeWidth: 3, elements: [], undoStack: [], redoStack: [],
-    isDrawing: false, startX: 0, startY: 0, currentPath: [], zoom: 1, panX: 0, panY: 0, isPanning: false,
-    selectedElement: null, images: {}
-  },
-  // Slides state
-  slides: [{ id: 'slide-1', elements: [], background: '#1a1f2e' }], currentSlide: 0,
-  // Dots
-  dots: []
+    peer: null, conns: {}, role: null, roomCode: null, myId: null, myName: 'Anonymous', myColor: PEER_COLORS[0],
+    peers: {}, workspace: {}, activeFile: null, editor: null, decorations: {}, rateLimits: {},
+    settings: { downloadAllowed: true, defaultRole: 'editor' }, chat: [], syncDebounce: null, cursorDebounce: null,
+    suppressChange: false, localVersion: {}, rightPanelOpen: true, contextTarget: null, monacoReady: false,
+    currentView: 'editor',
+    // Canvas state
+    canvas: {
+        tool: 'select', color: '#a78bfa', strokeWidth: 3, elements: [], undoStack: [], redoStack: [],
+        isDrawing: false, startX: 0, startY: 0, currentPath: [], zoom: 1, panX: 0, panY: 0, isPanning: false,
+        selectedElement: null, images: {}
+    },
+    // Slides state
+    slides: [{ id: 'slide-1', elements: [], background: '#1a1f2e' }], currentSlide: 0,
+    // Dots
+    dots: []
 };
 
 // ─── UTILS ───
@@ -40,14 +40,14 @@ function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '
 
 // ─── SECURITY ───
 function validateMsg(msg) {
-  if (!msg || typeof msg !== 'object') return false; if (!SEC.ALLOWED_TYPES.has(msg.type)) return false;
-  if (msg.filename && typeof msg.filename === 'string' && (msg.filename.length > SEC.MAX_FILENAME_LEN || /[\/\\<>:"|?*]/.test(msg.filename))) return false;
-  if (msg.text && typeof msg.text === 'string' && msg.text.length > SEC.MAX_CHAT_LEN) return false;
-  if (msg.content && typeof msg.content === 'string' && msg.content.length > SEC.MAX_FILE_SIZE) return false; return true
+    if (!msg || typeof msg !== 'object') return false; if (!SEC.ALLOWED_TYPES.has(msg.type)) return false;
+    if (msg.filename && typeof msg.filename === 'string' && (msg.filename.length > SEC.MAX_FILENAME_LEN || /[\/\\<>:"|?*]/.test(msg.filename))) return false;
+    if (msg.text && typeof msg.text === 'string' && msg.text.length > SEC.MAX_CHAT_LEN) return false;
+    if (msg.content && typeof msg.content === 'string' && msg.content.length > SEC.MAX_FILE_SIZE) return false; return true
 }
 function checkRateLimit(pid) {
-  const now = Date.now(); if (!state.rateLimits[pid] || state.rateLimits[pid].resetAt < now) state.rateLimits[pid] = { count: 0, resetAt: now + 1000 };
-  state.rateLimits[pid].count++; return state.rateLimits[pid].count <= SEC.RATE_LIMIT_PER_SEC
+    const now = Date.now(); if (!state.rateLimits[pid] || state.rateLimits[pid].resetAt < now) state.rateLimits[pid] = { count: 0, resetAt: now + 1000 };
+    state.rateLimits[pid].count++; return state.rateLimits[pid].count <= SEC.RATE_LIMIT_PER_SEC
 }
 function isOwner() { return state.role === 'owner' }
 function canEdit() { return state.role === 'owner' || state.role === 'editor' }
@@ -57,205 +57,209 @@ function peerCanEdit(pid) { const r = getPeerRole(pid); return r === 'owner' || 
 
 // ─── TOAST ───
 function toast(msg, type = 'info', dur = 3500) {
-  const icons = {
-    success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(16,185,129,.2)"/><path d="M9 12l2 2 4-4" stroke="#10b981" stroke-width="2" stroke-linecap="round"/></svg>',
-    error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(239,68,68,.2)"/><path d="M15 9l-6 6M9 9l6 6" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>',
-    info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(124,58,237,.2)"/><path d="M12 8v4M12 16h.01" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/></svg>'
-  };
-  const el = document.createElement('div'); el.className = `toast toast-${type}`;
-  el.innerHTML = `${icons[type] || icons.info}<span>${String(msg).replace(/</g, '&lt;')}</span>`;
-  $('toast-container').appendChild(el);
-  setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove(), { once: true }) }, dur)
+    const icons = {
+        success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(16,185,129,.2)"/><path d="M9 12l2 2 4-4" stroke="#10b981" stroke-width="2" stroke-linecap="round"/></svg>',
+        error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(239,68,68,.2)"/><path d="M15 9l-6 6M9 9l6 6" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>',
+        info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(124,58,237,.2)"/><path d="M12 8v4M12 16h.01" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/></svg>'
+    };
+    const el = document.createElement('div'); el.className = `toast toast-${type}`;
+    el.innerHTML = `${icons[type] || icons.info}<span>${String(msg).replace(/</g, '&lt;')}</span>`;
+    $('toast-container').appendChild(el);
+    setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove(), { once: true }) }, dur)
 }
 
 function showModal({ icon = '', title = '', body = '', confirmText = 'OK', cancelText = 'Cancel', onConfirm, dangerous = false }) {
-  $('modal-icon').textContent = icon; $('modal-title').textContent = title; $('modal-body').textContent = body;
-  $('modal-confirm').textContent = confirmText; $('modal-cancel').textContent = cancelText;
-  $('modal-backdrop').classList.remove('hidden');
-  const close = () => $('modal-backdrop').classList.add('hidden');
-  $('modal-confirm').onclick = () => { close(); onConfirm?.() }; $('modal-cancel').onclick = close;
-  $('modal-backdrop').onclick = e => { if (e.target === $('modal-backdrop')) close() }
+    $('modal-icon').textContent = icon; $('modal-title').textContent = title; $('modal-body').textContent = body;
+    $('modal-confirm').textContent = confirmText; $('modal-cancel').textContent = cancelText;
+    $('modal-backdrop').classList.remove('hidden');
+    const close = () => $('modal-backdrop').classList.add('hidden');
+    $('modal-confirm').onclick = () => { close(); onConfirm?.() }; $('modal-cancel').onclick = close;
+    $('modal-backdrop').onclick = e => { if (e.target === $('modal-backdrop')) close() }
 }
 
 // ─── SCREENS ───
 function showScreen(name) { ['screen-landing', 'screen-workspace'].forEach(id => $(id).classList.remove('active')); $(name).classList.add('active') }
 
 function switchView(view) {
-  state.currentView = view;
-  ['editor', 'canvas', 'slides'].forEach(v => {
-    const panel = $('view-' + v); const tab = $('tab-' + v);
-    if (v === view) { panel?.classList.add('active'); tab?.classList.add('active') }
-    else { panel?.classList.remove('active'); tab?.classList.remove('active') }
-  });
-  $('status-view-mode').textContent = view.charAt(0).toUpperCase() + view.slice(1);
-  if (view === 'editor' && state.editor) setTimeout(() => state.editor.layout(), 100);
-  if (view === 'canvas') resizeCanvas();
-  if (view === 'slides') resizeSlideCanvas()
+    state.currentView = view;
+    ['editor', 'canvas', 'slides'].forEach(v => {
+        const panel = $('view-' + v); const tab = $('tab-' + v);
+        if (v === view) { panel?.classList.add('active'); tab?.classList.add('active') }
+        else { panel?.classList.remove('active'); tab?.classList.remove('active') }
+    });
+    $('status-view-mode').textContent = view.charAt(0).toUpperCase() + view.slice(1);
+    if (view === 'editor' && state.editor) setTimeout(() => state.editor.layout(), 100);
+    if (view === 'canvas') resizeCanvas();
+    if (view === 'slides') resizeSlideCanvas()
 }
 
 // ─── FILE MANAGEMENT ───
 function addFileToWorkspace(name, content) {
-  const sn = safeFilename(name); if (!sn) return null; const lang = getLang(sn);
-  if (!state.workspace[sn]) state.localVersion[sn] = 0;
-  state.workspace[sn] = { content, language: lang, version: state.localVersion[sn] || 0, modified: false };
-  renderFileTree(); renderTabs(); return sn
+    const sn = safeFilename(name); if (!sn) return null; const lang = getLang(sn);
+    if (!state.workspace[sn]) state.localVersion[sn] = 0;
+    state.workspace[sn] = { content, language: lang, version: state.localVersion[sn] || 0, modified: false };
+    renderFileTree(); renderTabs(); return sn
 }
 function removeFileFromWorkspace(name) {
-  if (!state.workspace[name]) return; delete state.workspace[name]; delete state.localVersion[name];
-  if (state.activeFile === name) { const files = Object.keys(state.workspace); switchFile(files[0] || null) } renderFileTree(); renderTabs()
+    if (!state.workspace[name]) return; delete state.workspace[name]; delete state.localVersion[name];
+    if (state.activeFile === name) { const files = Object.keys(state.workspace); switchFile(files[0] || null) } renderFileTree(); renderTabs()
 }
 function readFileAsText(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = () => rej(r.error); r.readAsText(file, 'utf-8') }) }
 async function loadFiles(fileList) {
-  const results = []; for (const file of fileList) {
-    if (file.size > SEC.MAX_FILE_SIZE) { toast(`${file.name} too large`, 'error'); continue }
-    const content = await readFileAsText(file).catch(() => ''); results.push({ name: file.name, content })
-  } return results
+    const results = []; for (const file of fileList) {
+        if (file.size > SEC.MAX_FILE_SIZE) { toast(`${file.name} too large`, 'error'); continue }
+        const content = await readFileAsText(file).catch(() => ''); results.push({ name: file.name, content })
+    } return results
 }
 function switchFile(filename) {
-  if (!filename || !state.workspace[filename]) {
-    state.activeFile = null; if (state.editor) state.editor.setValue('');
-    $('monaco-container').classList.add('hidden'); $('editor-empty-state')?.classList.remove('hidden');
-    updateStatusBar(); renderFileTree(); renderTabs(); return
-  }
-  state.activeFile = filename; const file = state.workspace[filename];
-  if (state.editor) {
-    state.suppressChange = true;
-    const model = monaco.editor.getModel(monaco.Uri.parse(`file:///${filename}`)) || monaco.editor.createModel(file.content, file.language, monaco.Uri.parse(`file:///${filename}`));
-    if (state.editor.getModel() !== model) state.editor.setModel(model);
-    if (model.getValue() !== file.content) model.setValue(file.content);
-    state.editor.updateOptions({ readOnly: !canEdit() }); setTimeout(() => { state.suppressChange = false }, 50)
-  }
-  $('monaco-container').classList.remove('hidden'); $('editor-empty-state')?.classList.add('hidden');
-  if (state.currentView !== 'editor') switchView('editor');
-  updateStatusBar(); renderFileTree(); renderTabs(); broadcast({ type: 'file-open', filename })
+    if (!filename || !state.workspace[filename]) {
+        state.activeFile = null; if (state.editor) state.editor.setValue('');
+        $('monaco-container').classList.add('hidden'); $('editor-empty-state')?.classList.remove('hidden');
+        updateStatusBar(); renderFileTree(); renderTabs(); return
+    }
+    state.activeFile = filename; const file = state.workspace[filename];
+    if (state.editor) {
+        state.suppressChange = true;
+        const model = monaco.editor.getModel(monaco.Uri.parse(`file:///${filename}`)) || monaco.editor.createModel(file.content, file.language, monaco.Uri.parse(`file:///${filename}`));
+        if (state.editor.getModel() !== model) state.editor.setModel(model);
+        if (model.getValue() !== file.content) model.setValue(file.content);
+        state.editor.updateOptions({ readOnly: !canEdit() }); setTimeout(() => { state.suppressChange = false }, 50)
+    }
+    $('monaco-container').classList.remove('hidden'); $('editor-empty-state')?.classList.add('hidden');
+    if (state.currentView !== 'editor') switchView('editor');
+    updateStatusBar(); renderFileTree(); renderTabs(); broadcast({ type: 'file-open', filename })
 }
 
 // ─── P2P ───
 function initPeer(id, cb) {
-  if (state.peer) try { state.peer.destroy() } catch (e) { }
-  state.peer = new Peer(id, { debug: 0, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' }] } });
-  state.peer.on('open', pid => { state.myId = pid; cb(pid) });
-  state.peer.on('error', err => {
-    const msgs = { 'peer-unavailable': 'Room not found.', 'network': 'Network error.', 'unavailable-id': 'Code taken, retry.' };
-    toast(msgs[err.type] || 'Connection error: ' + err.type, 'error', 6000); $('join-status')?.classList.add('hidden');
-    const bj = $('btn-join'); if (bj) bj.disabled = false; updateStatus('error', 'Error')
-  });
-  state.peer.on('disconnected', () => { updateStatus('connecting', 'Reconnecting…'); try { state.peer.reconnect() } catch (e) { } })
+    if (state.peer) try { state.peer.destroy() } catch (e) { }
+    state.peer = new Peer(id, { debug: 0, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' }] } });
+    state.peer.on('open', pid => { state.myId = pid; cb(pid) });
+    state.peer.on('error', err => {
+        const msgs = { 'peer-unavailable': 'Room not found.', 'network': 'Network error.', 'unavailable-id': 'Code taken, retry.' };
+        toast(msgs[err.type] || 'Connection error: ' + err.type, 'error', 6000); $('join-status')?.classList.add('hidden');
+        const bj = $('btn-join'); if (bj) bj.disabled = false; updateStatus('error', 'Error')
+    });
+    state.peer.on('disconnected', () => { updateStatus('connecting', 'Reconnecting…'); try { state.peer.reconnect() } catch (e) { } })
 }
 
 function setupConn(conn) {
-  conn.on('open', () => {
-    state.conns[conn.peer] = conn;
-    if (state.role === 'owner') {
-      const role = state.settings.defaultRole;
-      if (!state.peers[conn.peer]) state.peers[conn.peer] = { name: 'Peer', color: PEER_COLORS[Object.keys(state.peers).length % PEER_COLORS.length], role };
-      setTimeout(() => sendWorkspace(conn), 200)
-    }
-    updatePeersUI(); updateStatus('online', 'Connected')
-  });
-  conn.on('data', data => handleMessage(conn, data));
-  conn.on('close', () => {
-    delete state.conns[conn.peer]; delete state.peers[conn.peer]; delete state.decorations[conn.peer]; delete state.rateLimits[conn.peer];
-    updatePeersUI(); renderRemoteCursors(); if (!Object.keys(state.conns).length) updateStatus('connecting', 'Waiting…'); addChatSystem('A peer disconnected')
-  });
-  conn.on('error', err => console.error('[Conn]', err))
+    conn.on('open', () => {
+        state.conns[conn.peer] = conn;
+        if (state.role === 'owner') {
+            const role = state.settings.defaultRole;
+            if (!state.peers[conn.peer]) state.peers[conn.peer] = { name: 'Peer', color: PEER_COLORS[Object.keys(state.peers).length % PEER_COLORS.length], role };
+            setTimeout(() => sendWorkspace(conn), 200)
+        }
+        // Auto-call if already in voice channel
+        if (typeof voice !== 'undefined' && voice.inChannel) {
+            setTimeout(() => callPeer(conn.peer), 800);
+        }
+        updatePeersUI(); updateStatus('online', 'Connected')
+    });
+    conn.on('data', data => handleMessage(conn, data));
+    conn.on('close', () => {
+        delete state.conns[conn.peer]; delete state.peers[conn.peer]; delete state.decorations[conn.peer]; delete state.rateLimits[conn.peer];
+        updatePeersUI(); renderRemoteCursors(); if (!Object.keys(state.conns).length) updateStatus('connecting', 'Waiting…'); addChatSystem('A peer disconnected')
+    });
+    conn.on('error', err => console.error('[Conn]', err))
 }
 
 function broadcast(msg, excludeId = null) { Object.entries(state.conns).forEach(([id, conn]) => { if (id !== excludeId && conn.open) try { conn.send(msg) } catch (e) { } }) }
 function sendTo(pid, msg) { const conn = state.conns[pid]; if (conn?.open) try { conn.send(msg) } catch (e) { } }
 
 function sendWorkspace(conn) {
-  const files = {}; Object.entries(state.workspace).forEach(([n, f]) => { files[n] = { content: f.content, language: f.language, version: f.version } });
-  conn.send({
-    type: 'workspace-data', files, activeFile: state.activeFile, settings: state.settings, myName: state.myName, myColor: state.myColor,
-    peerRole: state.peers[conn.peer]?.role || state.settings.defaultRole,
-    canvasElements: state.canvas.elements, slides: state.slides, dots: state.dots
-  })
+    const files = {}; Object.entries(state.workspace).forEach(([n, f]) => { files[n] = { content: f.content, language: f.language, version: f.version } });
+    conn.send({
+        type: 'workspace-data', files, activeFile: state.activeFile, settings: state.settings, myName: state.myName, myColor: state.myColor,
+        peerRole: state.peers[conn.peer]?.role || state.settings.defaultRole,
+        canvasElements: state.canvas.elements, slides: state.slides, dots: state.dots
+    })
 }
 
 // ─── MESSAGE HANDLER ───
 function handleMessage(conn, msg) {
-  if (!validateMsg(msg) || !checkRateLimit(conn.peer)) return;
-  switch (msg.type) {
-    case 'peer-info': {
-      if (!state.peers[conn.peer]) state.peers[conn.peer] = { role: state.settings.defaultRole };
-      state.peers[conn.peer].name = sanitizeStr(msg.name || 'Peer', SEC.MAX_NAME_LEN);
-      state.peers[conn.peer].color = /^#[0-9A-Fa-f]{6}$/.test(msg.color || '') ? msg.color : '#54a0ff';
-      state.peers[conn.peer].conn = conn; updatePeersUI(); addChatSystem(`${state.peers[conn.peer].name} joined`); break
+    if (!validateMsg(msg) || !checkRateLimit(conn.peer)) return;
+    switch (msg.type) {
+        case 'peer-info': {
+            if (!state.peers[conn.peer]) state.peers[conn.peer] = { role: state.settings.defaultRole };
+            state.peers[conn.peer].name = sanitizeStr(msg.name || 'Peer', SEC.MAX_NAME_LEN);
+            state.peers[conn.peer].color = /^#[0-9A-Fa-f]{6}$/.test(msg.color || '') ? msg.color : '#54a0ff';
+            state.peers[conn.peer].conn = conn; updatePeersUI(); addChatSystem(`${state.peers[conn.peer].name} joined`); break
+        }
+        case 'workspace-data': {
+            state.settings = { downloadAllowed: !!msg.settings?.downloadAllowed, defaultRole: msg.settings?.defaultRole || 'editor' };
+            state.role = ['owner', 'editor', 'viewer'].includes(msg.peerRole) ? msg.peerRole : 'viewer';
+            if (!state.peers[conn.peer]) state.peers[conn.peer] = { role: 'owner' };
+            state.peers[conn.peer].name = sanitizeStr(msg.myName || 'Host', SEC.MAX_NAME_LEN);
+            state.peers[conn.peer].color = /^#[0-9A-Fa-f]{6}$/.test(msg.myColor || '') ? msg.myColor : '#a78bfa';
+            state.workspace = {}; state.localVersion = {};
+            const files = msg.files && typeof msg.files === 'object' ? msg.files : {};
+            Object.entries(files).forEach(([n, f]) => {
+                if (typeof f.content !== 'string' || f.content.length > SEC.MAX_FILE_SIZE) return;
+                const sn = safeFilename(n); state.workspace[sn] = { content: f.content, language: f.language || getLang(sn), version: f.version || 0, modified: false }; state.localVersion[sn] = f.version || 0
+            });
+            if (Array.isArray(msg.canvasElements)) state.canvas.elements = msg.canvasElements;
+            if (Array.isArray(msg.slides)) state.slides = msg.slides;
+            if (Array.isArray(msg.dots)) state.dots = msg.dots;
+            const active = safeFilename(msg.activeFile || ''); renderFileTree(); renderTabs(); renderSlidesList();
+            if (state.monacoReady) switchFile(active && state.workspace[active] ? active : Object.keys(state.workspace)[0] || null);
+            updateStatus('online', 'Connected'); updateRoleBadge(); updatePeersUI(); applySettingsToUI();
+            toast('Workspace loaded!', 'success'); break
+        }
+        case 'sync': {
+            if (!msg.filename || !state.workspace[msg.filename]) return; if (typeof msg.content !== 'string' || msg.content.length > SEC.MAX_FILE_SIZE) return;
+            if (!peerCanEdit(conn.peer)) return; const ver = parseInt(msg.version) || 0; if (ver < (state.localVersion[msg.filename] || 0)) return;
+            state.workspace[msg.filename].content = msg.content; state.workspace[msg.filename].version = ver; state.localVersion[msg.filename] = ver;
+            if (state.activeFile === msg.filename && state.editor) {
+                state.suppressChange = true; const model = state.editor.getModel();
+                if (model && model.getValue() !== msg.content) { const pos = state.editor.getPosition(); model.setValue(msg.content); if (pos) state.editor.setPosition(pos) }
+                setTimeout(() => { state.suppressChange = false }, 50)
+            }
+            if (state.role === 'owner') broadcast(msg, conn.peer); break
+        }
+        case 'cursor': {
+            if (!state.peers[conn.peer]) return; state.peers[conn.peer].cursor = msg.pos; state.peers[conn.peer].cursorFile = msg.filename;
+            if (msg.filename === state.activeFile) renderRemoteCursors(); break
+        }
+        case 'canvas-draw': {
+            if (!peerCanEdit(conn.peer)) return; if (msg.element) state.canvas.elements.push(msg.element);
+            renderCanvas(); if (state.role === 'owner') broadcast(msg, conn.peer); break
+        }
+        case 'canvas-state': { if (Array.isArray(msg.elements)) state.canvas.elements = msg.elements; renderCanvas(); break }
+        case 'canvas-cursor': { if (!state.peers[conn.peer]) return; state.peers[conn.peer].canvasCursor = msg.pos; renderCanvasCursors(); break }
+        case 'slide-update': {
+            if (!peerCanEdit(conn.peer)) return; if (Array.isArray(msg.slides)) state.slides = msg.slides;
+            if (typeof msg.currentSlide === 'number') state.currentSlide = msg.currentSlide;
+            renderSlidesList(); renderCurrentSlide(); if (state.role === 'owner') broadcast(msg, conn.peer); break
+        }
+        case 'dot-update': { if (Array.isArray(msg.dots)) state.dots = msg.dots; renderCanvas(); if (state.role === 'owner') broadcast(msg, conn.peer); break }
+        case 'file-open': { const fn = safeFilename(msg.filename || ''); if (state.peers[conn.peer]) state.peers[conn.peer].activeFile = fn; break }
+        case 'file-rename': {
+            if (!peerCanEdit(conn.peer)) return; const oN = safeFilename(msg.oldName || ''), nN = safeFilename(msg.newName || '');
+            if (!oN || !nN || !state.workspace[oN] || state.workspace[nN]) return; const fi = state.workspace[oN];
+            state.workspace[nN] = { ...fi, language: getLang(nN) }; delete state.workspace[oN];
+            if (state.activeFile === oN) state.activeFile = nN; renderFileTree(); renderTabs(); if (state.role === 'owner') broadcast(msg, conn.peer); break
+        }
+        case 'file-delete': { if (!peerCanEdit(conn.peer)) return; const fn = safeFilename(msg.filename || ''); if (state.workspace[fn]) removeFileFromWorkspace(fn); break }
+        case 'permission-change-recv': {
+            if (typeof msg.role !== 'string') return; const nr = ['editor', 'viewer'].includes(msg.role) ? msg.role : 'viewer';
+            if (msg.targetId === state.myId) {
+                state.role = nr; updateRoleBadge(); if (state.editor) state.editor.updateOptions({ readOnly: !canEdit() });
+                toast(`Role changed to: ${nr}`, 'info')
+            } break
+        }
+        case 'kick': { if (msg.targetId === state.myId) { toast('You were removed.', 'error', 6000); leaveRoom(false) } break }
+        case 'chat': {
+            if (typeof msg.text !== 'string' || !msg.text.trim()) return; const name = sanitizeStr(state.peers[conn.peer]?.name || 'Peer', SEC.MAX_NAME_LEN);
+            const color = state.peers[conn.peer]?.color || '#54a0ff'; addChatMessage(name, sanitizeStr(msg.text, SEC.MAX_CHAT_LEN), color, false); break
+        }
+        case 'settings-update': {
+            if (state.role === 'owner') return; if (typeof msg.settings?.downloadAllowed === 'boolean') state.settings.downloadAllowed = msg.settings.downloadAllowed;
+            if (['editor', 'viewer'].includes(msg.settings?.defaultRole)) state.settings.defaultRole = msg.settings.defaultRole; applySettingsToUI(); break
+        }
+        case 'request-workspace': { if (state.role === 'owner') sendWorkspace(conn); break }
     }
-    case 'workspace-data': {
-      state.settings = { downloadAllowed: !!msg.settings?.downloadAllowed, defaultRole: msg.settings?.defaultRole || 'editor' };
-      state.role = ['owner', 'editor', 'viewer'].includes(msg.peerRole) ? msg.peerRole : 'viewer';
-      if (!state.peers[conn.peer]) state.peers[conn.peer] = { role: 'owner' };
-      state.peers[conn.peer].name = sanitizeStr(msg.myName || 'Host', SEC.MAX_NAME_LEN);
-      state.peers[conn.peer].color = /^#[0-9A-Fa-f]{6}$/.test(msg.myColor || '') ? msg.myColor : '#a78bfa';
-      state.workspace = {}; state.localVersion = {};
-      const files = msg.files && typeof msg.files === 'object' ? msg.files : {};
-      Object.entries(files).forEach(([n, f]) => {
-        if (typeof f.content !== 'string' || f.content.length > SEC.MAX_FILE_SIZE) return;
-        const sn = safeFilename(n); state.workspace[sn] = { content: f.content, language: f.language || getLang(sn), version: f.version || 0, modified: false }; state.localVersion[sn] = f.version || 0
-      });
-      if (Array.isArray(msg.canvasElements)) state.canvas.elements = msg.canvasElements;
-      if (Array.isArray(msg.slides)) state.slides = msg.slides;
-      if (Array.isArray(msg.dots)) state.dots = msg.dots;
-      const active = safeFilename(msg.activeFile || ''); renderFileTree(); renderTabs(); renderSlidesList();
-      if (state.monacoReady) switchFile(active && state.workspace[active] ? active : Object.keys(state.workspace)[0] || null);
-      updateStatus('online', 'Connected'); updateRoleBadge(); updatePeersUI(); applySettingsToUI();
-      toast('Workspace loaded!', 'success'); break
-    }
-    case 'sync': {
-      if (!msg.filename || !state.workspace[msg.filename]) return; if (typeof msg.content !== 'string' || msg.content.length > SEC.MAX_FILE_SIZE) return;
-      if (!peerCanEdit(conn.peer)) return; const ver = parseInt(msg.version) || 0; if (ver < (state.localVersion[msg.filename] || 0)) return;
-      state.workspace[msg.filename].content = msg.content; state.workspace[msg.filename].version = ver; state.localVersion[msg.filename] = ver;
-      if (state.activeFile === msg.filename && state.editor) {
-        state.suppressChange = true; const model = state.editor.getModel();
-        if (model && model.getValue() !== msg.content) { const pos = state.editor.getPosition(); model.setValue(msg.content); if (pos) state.editor.setPosition(pos) }
-        setTimeout(() => { state.suppressChange = false }, 50)
-      }
-      if (state.role === 'owner') broadcast(msg, conn.peer); break
-    }
-    case 'cursor': {
-      if (!state.peers[conn.peer]) return; state.peers[conn.peer].cursor = msg.pos; state.peers[conn.peer].cursorFile = msg.filename;
-      if (msg.filename === state.activeFile) renderRemoteCursors(); break
-    }
-    case 'canvas-draw': {
-      if (!peerCanEdit(conn.peer)) return; if (msg.element) state.canvas.elements.push(msg.element);
-      renderCanvas(); if (state.role === 'owner') broadcast(msg, conn.peer); break
-    }
-    case 'canvas-state': { if (Array.isArray(msg.elements)) state.canvas.elements = msg.elements; renderCanvas(); break }
-    case 'canvas-cursor': { if (!state.peers[conn.peer]) return; state.peers[conn.peer].canvasCursor = msg.pos; renderCanvasCursors(); break }
-    case 'slide-update': {
-      if (!peerCanEdit(conn.peer)) return; if (Array.isArray(msg.slides)) state.slides = msg.slides;
-      if (typeof msg.currentSlide === 'number') state.currentSlide = msg.currentSlide;
-      renderSlidesList(); renderCurrentSlide(); if (state.role === 'owner') broadcast(msg, conn.peer); break
-    }
-    case 'dot-update': { if (Array.isArray(msg.dots)) state.dots = msg.dots; renderCanvas(); if (state.role === 'owner') broadcast(msg, conn.peer); break }
-    case 'file-open': { const fn = safeFilename(msg.filename || ''); if (state.peers[conn.peer]) state.peers[conn.peer].activeFile = fn; break }
-    case 'file-rename': {
-      if (!peerCanEdit(conn.peer)) return; const oN = safeFilename(msg.oldName || ''), nN = safeFilename(msg.newName || '');
-      if (!oN || !nN || !state.workspace[oN] || state.workspace[nN]) return; const fi = state.workspace[oN];
-      state.workspace[nN] = { ...fi, language: getLang(nN) }; delete state.workspace[oN];
-      if (state.activeFile === oN) state.activeFile = nN; renderFileTree(); renderTabs(); if (state.role === 'owner') broadcast(msg, conn.peer); break
-    }
-    case 'file-delete': { if (!peerCanEdit(conn.peer)) return; const fn = safeFilename(msg.filename || ''); if (state.workspace[fn]) removeFileFromWorkspace(fn); break }
-    case 'permission-change-recv': {
-      if (typeof msg.role !== 'string') return; const nr = ['editor', 'viewer'].includes(msg.role) ? msg.role : 'viewer';
-      if (msg.targetId === state.myId) {
-        state.role = nr; updateRoleBadge(); if (state.editor) state.editor.updateOptions({ readOnly: !canEdit() });
-        toast(`Role changed to: ${nr}`, 'info')
-      } break
-    }
-    case 'kick': { if (msg.targetId === state.myId) { toast('You were removed.', 'error', 6000); leaveRoom(false) } break }
-    case 'chat': {
-      if (typeof msg.text !== 'string' || !msg.text.trim()) return; const name = sanitizeStr(state.peers[conn.peer]?.name || 'Peer', SEC.MAX_NAME_LEN);
-      const color = state.peers[conn.peer]?.color || '#54a0ff'; addChatMessage(name, sanitizeStr(msg.text, SEC.MAX_CHAT_LEN), color, false); break
-    }
-    case 'settings-update': {
-      if (state.role === 'owner') return; if (typeof msg.settings?.downloadAllowed === 'boolean') state.settings.downloadAllowed = msg.settings.downloadAllowed;
-      if (['editor', 'viewer'].includes(msg.settings?.defaultRole)) state.settings.defaultRole = msg.settings.defaultRole; applySettingsToUI(); break
-    }
-    case 'request-workspace': { if (state.role === 'owner') sendWorkspace(conn); break }
-  }
 }
 // ─── UI RENDERERS (Part 2) ───
 // Canvas, Slides, IDE events, boot logic
@@ -903,5 +907,334 @@ function setupIDE() {
     })
 }
 
+// ─── VOICE CHAT ENGINE ───
+const voice = {
+    inChannel: false,
+    stream: null,         // local MediaStream
+    calls: {},            // peerId → MediaStream call object
+    remoteStreams: {},    // peerId → remote MediaStream
+    audioCtx: null,
+    analysers: {},        // peerId → { analyser, dataArray }
+    selfAnalyser: null,
+    selfDataArray: null,
+    micMuted: false,
+    deafened: false,
+    speakingStates: {},   // peerId | 'self' → boolean
+    speakingInterval: null
+};
+
+// ── Setup voice UI bindings (called in setupIDE) ──
+function setupVoiceChat() {
+    $('btn-voice-join')?.addEventListener('click', joinVoice);
+    $('btn-voice-leave')?.addEventListener('click', leaveVoice);
+
+    $('btn-voice-mute')?.addEventListener('click', () => {
+        if (!voice.stream) return;
+        voice.micMuted = !voice.micMuted;
+        voice.stream.getAudioTracks().forEach(t => { t.enabled = !voice.micMuted });
+        $('icon-mic-on')?.classList.toggle('hidden', voice.micMuted);
+        $('icon-mic-off')?.classList.toggle('hidden', !voice.micMuted);
+        $('btn-voice-mute')?.classList.toggle('muted', voice.micMuted);
+        renderVoiceParticipants();
+    });
+
+    $('btn-voice-deafen')?.addEventListener('click', () => {
+        voice.deafened = !voice.deafened;
+        // Also mute mic when deafened (like Discord convention)
+        if (voice.deafened && !voice.micMuted) {
+            voice.micMuted = true;
+            if (voice.stream) voice.stream.getAudioTracks().forEach(t => { t.enabled = false });
+            $('icon-mic-on')?.classList.toggle('hidden', true);
+            $('icon-mic-off')?.classList.toggle('hidden', false);
+            $('btn-voice-mute')?.classList.add('muted');
+        }
+        // Mute/unmute all remote audio elements
+        document.querySelectorAll('#voice-audio-container audio').forEach(a => { a.muted = voice.deafened });
+        $('icon-ear-on')?.classList.toggle('hidden', voice.deafened);
+        $('icon-ear-off')?.classList.toggle('hidden', !voice.deafened);
+        $('btn-voice-deafen')?.classList.toggle('muted', voice.deafened);
+        renderVoiceParticipants();
+    });
+
+    $('voice-topbar-badge')?.addEventListener('click', () => {
+        // Switch right panel to voice tab
+        document.querySelectorAll('.rpanel-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.rpanel-content').forEach(c => { c.classList.remove('active'); c.classList.add('hidden') });
+        const voiceTab = document.querySelector('[data-tab="rpanel-voice"]');
+        if (voiceTab) voiceTab.classList.add('active');
+        const voicePanel = $('rpanel-voice');
+        if (voicePanel) { voicePanel.classList.remove('hidden'); voicePanel.classList.add('active') }
+        if (!state.rightPanelOpen) {
+            state.rightPanelOpen = true;
+            $('right-panel')?.classList.remove('collapsed');
+            if (state.editor) setTimeout(() => state.editor.layout(), 210);
+        }
+    });
+}
+
+async function joinVoice() {
+    if (voice.inChannel) return;
+    if (!state.peer || !state.myId) { toast('Join a room first!', 'error'); return }
+    try {
+        setVoiceStatus('connecting', 'Requesting mic…');
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        voice.stream = stream;
+        voice.inChannel = true;
+        voice.micMuted = false;
+
+        // Set up self audio analyser
+        voice.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const src = voice.audioCtx.createMediaStreamSource(stream);
+        const analyser = voice.audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        src.connect(analyser);
+        voice.selfAnalyser = analyser;
+        voice.selfDataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        // Listen for incoming calls
+        state.peer.on('call', incomingCall => handleIncomingCall(incomingCall));
+
+        // Call all existing peers
+        Object.keys(state.conns).forEach(pid => callPeer(pid));
+
+        // Update UI
+        $('btn-voice-join')?.classList.add('hidden');
+        $('btn-voice-leave')?.classList.remove('hidden');
+        $('btn-voice-mute')?.classList.remove('hidden');
+        $('btn-voice-deafen')?.classList.remove('hidden');
+        $('icon-mic-on')?.classList.remove('hidden');
+        $('icon-mic-off')?.classList.add('hidden');
+        $('icon-ear-on')?.classList.remove('hidden');
+        $('icon-ear-off')?.classList.add('hidden');
+        $('voice-topbar-badge')?.classList.add('active');
+        setVoiceStatus('active', 'Connected');
+        renderVoiceParticipants();
+        startSpeakingDetection();
+        toast('Joined voice channel', 'success', 2500);
+    } catch (err) {
+        console.error('[Voice]', err);
+        setVoiceStatus('', 'Not connected');
+        if (err.name === 'NotAllowedError') toast('Microphone access denied', 'error');
+        else toast('Could not access microphone', 'error');
+    }
+}
+
+function callPeer(pid) {
+    if (!voice.inChannel || !voice.stream || voice.calls[pid]) return;
+    if (!state.conns[pid]?.open) return;
+    const call = state.peer.call(pid, voice.stream, { metadata: { name: state.myName, color: state.myColor } });
+    if (!call) return;
+    voice.calls[pid] = call;
+    call.on('stream', remoteStream => attachRemoteStream(pid, remoteStream));
+    call.on('close', () => removeVoicePeer(pid));
+    call.on('error', e => { console.warn('[Voice call err]', e); removeVoicePeer(pid) });
+}
+
+function handleIncomingCall(call) {
+    if (!voice.inChannel || !voice.stream) { call.close(); return }
+    call.answer(voice.stream);
+    voice.calls[call.peer] = call;
+    call.on('stream', remoteStream => attachRemoteStream(call.peer, remoteStream));
+    call.on('close', () => removeVoicePeer(call.peer));
+    call.on('error', e => console.warn('[Voice incoming err]', e));
+}
+
+function attachRemoteStream(pid, remoteStream) {
+    voice.remoteStreams[pid] = remoteStream;
+
+    // Audio element
+    let audio = document.getElementById('voice-audio-' + pid);
+    if (!audio) {
+        audio = document.createElement('audio');
+        audio.id = 'voice-audio-' + pid;
+        audio.autoplay = true;
+        $('voice-audio-container')?.appendChild(audio);
+    }
+    audio.srcObject = remoteStream;
+    audio.muted = voice.deafened;
+
+    // Set up remote analyser for speaking detection
+    if (voice.audioCtx) {
+        try {
+            const src = voice.audioCtx.createMediaStreamSource(remoteStream);
+            const analyser = voice.audioCtx.createAnalyser();
+            analyser.fftSize = 512;
+            src.connect(analyser);
+            voice.analysers[pid] = { analyser, dataArray: new Uint8Array(analyser.frequencyBinCount) };
+        } catch (e) { console.warn('[Voice analyser]', e) }
+    }
+    renderVoiceParticipants();
+}
+
+function removeVoicePeer(pid) {
+    const audio = document.getElementById('voice-audio-' + pid);
+    if (audio) audio.remove();
+    delete voice.calls[pid];
+    delete voice.remoteStreams[pid];
+    delete voice.analysers[pid];
+    delete voice.speakingStates[pid];
+    renderVoiceParticipants();
+}
+
+function leaveVoice() {
+    voice.inChannel = false;
+
+    // Stop all calls
+    Object.values(voice.calls).forEach(c => { try { c.close() } catch (e) { } });
+    voice.calls = {};
+
+    // Remove all audio elements
+    Object.keys(voice.remoteStreams).forEach(pid => {
+        const a = document.getElementById('voice-audio-' + pid); if (a) a.remove();
+    });
+    voice.remoteStreams = {};
+    voice.analysers = {};
+    voice.speakingStates = {};
+
+    // Stop mic tracks
+    if (voice.stream) { voice.stream.getTracks().forEach(t => t.stop()); voice.stream = null }
+
+    // Close AudioContext
+    if (voice.audioCtx) { try { voice.audioCtx.close() } catch (e) { } voice.audioCtx = null }
+    voice.selfAnalyser = null; voice.selfDataArray = null;
+
+    // Stop speaking detection
+    if (voice.speakingInterval) { clearInterval(voice.speakingInterval); voice.speakingInterval = null }
+
+    // Reset state
+    voice.micMuted = false; voice.deafened = false;
+
+    // Update UI
+    $('btn-voice-join')?.classList.remove('hidden');
+    $('btn-voice-leave')?.classList.add('hidden');
+    $('btn-voice-mute')?.classList.add('hidden');
+    $('btn-voice-deafen')?.classList.add('hidden');
+    $('voice-topbar-badge')?.classList.remove('active');
+    setVoiceStatus('', 'Not connected');
+    renderVoiceParticipants();
+    toast('Left voice channel', 'info', 2000);
+}
+
+function setVoiceStatus(type, text) {
+    const dot = $('voice-status-dot'); const txt = $('voice-status-text');
+    if (dot) { dot.className = 'voice-status-dot'; if (type) dot.classList.add(type) }
+    if (txt) txt.textContent = text;
+}
+
+function startSpeakingDetection() {
+    if (voice.speakingInterval) clearInterval(voice.speakingInterval);
+    const THRESHOLD = 12;
+    voice.speakingInterval = setInterval(() => {
+        if (!voice.inChannel) return;
+
+        // Self
+        if (voice.selfAnalyser && voice.selfDataArray && !voice.micMuted) {
+            voice.selfAnalyser.getByteFrequencyData(voice.selfDataArray);
+            const avg = voice.selfDataArray.reduce((a, b) => a + b, 0) / voice.selfDataArray.length;
+            const isSpeaking = avg > THRESHOLD;
+            if (isSpeaking !== voice.speakingStates['self']) {
+                voice.speakingStates['self'] = isSpeaking;
+                updateParticipantSpeaking('self', isSpeaking);
+            }
+        } else if (voice.speakingStates['self']) {
+            voice.speakingStates['self'] = false;
+            updateParticipantSpeaking('self', false);
+        }
+
+        // Remote peers
+        Object.entries(voice.analysers).forEach(([pid, { analyser, dataArray }]) => {
+            analyser.getByteFrequencyData(dataArray);
+            const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            const isSpeaking = avg > THRESHOLD;
+            if (isSpeaking !== voice.speakingStates[pid]) {
+                voice.speakingStates[pid] = isSpeaking;
+                updateParticipantSpeaking(pid, isSpeaking);
+            }
+        });
+    }, 100);
+}
+
+function updateParticipantSpeaking(key, isSpeaking) {
+    const el = document.getElementById('voice-peer-' + key);
+    if (!el) return;
+    el.classList.toggle('speaking', isSpeaking);
+    const stateEl = el.querySelector('.voice-participant-state');
+    if (stateEl) {
+        stateEl.className = 'voice-participant-state' + (isSpeaking ? ' speaking-text' : '');
+        if (key === 'self') {
+            stateEl.textContent = voice.micMuted ? 'Muted' : (isSpeaking ? 'Speaking…' : 'Connected');
+        } else {
+            stateEl.textContent = isSpeaking ? 'Speaking…' : 'Listening';
+        }
+    }
+}
+
+function renderVoiceParticipants() {
+    const container = $('voice-participants'); if (!container) return;
+    container.innerHTML = '';
+    const inVoice = voice.inChannel;
+
+    if (!inVoice) {
+        container.innerHTML = '<div class="voice-empty">Join the voice channel to talk with peers</div>';
+        return;
+    }
+
+    // Self card
+    const selfEl = createVoiceParticipantEl('self', state.myName, state.myColor,
+        voice.micMuted, voice.deafened, voice.speakingStates['self'] || false, true);
+    container.appendChild(selfEl);
+
+    // Remote peers that are in the voice channel (have a stream)
+    Object.keys(voice.remoteStreams).forEach(pid => {
+        const peer = state.peers[pid];
+        const name = peer?.name || 'Peer';
+        const color = peer?.color || '#54a0ff';
+        const el = createVoiceParticipantEl(pid, name, color, false, false, voice.speakingStates[pid] || false, false);
+        container.appendChild(el);
+    });
+
+    if (container.children.length === 1) {
+        const hint = document.createElement('div');
+        hint.className = 'voice-empty';
+        hint.textContent = 'Waiting for others to join…';
+        container.appendChild(hint);
+    }
+
+    // Update topbar badge text
+    const total = Object.keys(voice.remoteStreams).length + 1;
+    const badge = $('voice-badge-count');
+    if (badge) badge.textContent = `Voice · ${total}`;
+}
+
+function createVoiceParticipantEl(key, name, color, isMuted, isDeafened, isSpeaking, isSelf) {
+    const div = document.createElement('div');
+    div.className = 'voice-participant' + (isSpeaking ? ' speaking' : '') + (isSelf && isMuted ? ' muted-self' : '');
+    div.id = 'voice-peer-' + key;
+    const init = (name || '?')[0].toUpperCase();
+    let stateText = isSelf ? (isMuted ? 'Muted' : 'Connected') : 'Listening';
+    if (isSpeaking && !isMuted) stateText = 'Speaking…';
+    const mutedIcon = isMuted ? `<div class="voice-icon muted-icon" title="Muted"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 1a3 3 0 00-3 3v7a3 3 0 006 0V4a3 3 0 00-3-3z" stroke="currentColor" stroke-width="2" stroke-dasharray="4 2"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>` : '';
+    const deafenedIcon = isDeafened ? `<div class="voice-icon deafened-icon" title="Deafened"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M3 18v-6a9 9 0 0118 0v6" stroke="currentColor" stroke-width="2" stroke-dasharray="4 2"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>` : '';
+    div.innerHTML = `
+    <div class="voice-avatar-wrap">
+      <div class="voice-speaking-ring"></div>
+      <div class="voice-avatar" style="background:${color}">${init}</div>
+    </div>
+    <div class="voice-participant-info">
+      <div class="voice-participant-name">${escapeHtml(name)}${isSelf ? ' (You)' : ''}</div>
+      <div class="voice-participant-state${isSpeaking && !isMuted ? ' speaking-text' : ''}">${stateText}</div>
+    </div>
+    <div class="voice-icons">${mutedIcon}${deafenedIcon}</div>
+  `;
+    return div;
+}
+
 // ─── BOOT ───
-document.addEventListener('DOMContentLoaded', () => { setupLanding(); setupIDE(); updateStatus('offline', 'Offline') });
+document.addEventListener('DOMContentLoaded', () => {
+    setupLanding();
+    setupIDE();
+    setupVoiceChat();
+    updateStatus('offline', 'Offline');
+    renderVoiceParticipants();
+});
+
