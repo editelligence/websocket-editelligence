@@ -940,13 +940,20 @@ function setupVoiceChat() {
 
     $('btn-voice-deafen')?.addEventListener('click', () => {
         voice.deafened = !voice.deafened;
-        // Also mute mic when deafened (like Discord convention)
+        // When deafening: also mute mic. When un-deafening: restore mic if not manually muted.
         if (voice.deafened && !voice.micMuted) {
             voice.micMuted = true;
             if (voice.stream) voice.stream.getAudioTracks().forEach(t => { t.enabled = false });
             $('icon-mic-on')?.classList.toggle('hidden', true);
             $('icon-mic-off')?.classList.toggle('hidden', false);
             $('btn-voice-mute')?.classList.add('muted');
+        } else if (!voice.deafened && voice.micMuted) {
+            // Auto re-enable mic when undeafening (if it wasn't manually muted before deafen)
+            voice.micMuted = false;
+            if (voice.stream) voice.stream.getAudioTracks().forEach(t => { t.enabled = true });
+            $('icon-mic-on')?.classList.toggle('hidden', false);
+            $('icon-mic-off')?.classList.toggle('hidden', true);
+            $('btn-voice-mute')?.classList.remove('muted');
         }
         // Mute/unmute all remote audio elements
         document.querySelectorAll('#voice-audio-container audio').forEach(a => { a.muted = voice.deafened });
@@ -991,8 +998,9 @@ async function joinVoice() {
         voice.selfAnalyser = analyser;
         voice.selfDataArray = new Uint8Array(analyser.frequencyBinCount);
 
-        // Listen for incoming calls
-        state.peer.on('call', incomingCall => handleIncomingCall(incomingCall));
+        // Listen for incoming calls — use named handler to avoid stacking listeners
+        voice._callHandler = incomingCall => handleIncomingCall(incomingCall);
+        state.peer.on('call', voice._callHandler);
 
         // Call all existing peers
         Object.keys(state.conns).forEach(pid => callPeer(pid));
@@ -1078,6 +1086,12 @@ function removeVoicePeer(pid) {
 
 function leaveVoice() {
     voice.inChannel = false;
+
+    // Remove the 'call' listener to avoid ghost listeners on rejoin
+    if (voice._callHandler && state.peer) {
+        try { state.peer.off('call', voice._callHandler) } catch (e) { }
+        voice._callHandler = null;
+    }
 
     // Stop all calls
     Object.values(voice.calls).forEach(c => { try { c.close() } catch (e) { } });
@@ -1234,7 +1248,87 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLanding();
     setupIDE();
     setupVoiceChat();
+    setupMobileNav();
     updateStatus('offline', 'Offline');
     renderVoiceParticipants();
 });
+
+// ─── MOBILE NAV ───
+function setupMobileNav() {
+    const overlay = $('mobile-overlay');
+    const leftSidebar = $('left-sidebar');
+    const rightPanel = $('right-panel');
+
+    function closeDrawers() {
+        leftSidebar?.classList.remove('mobile-open');
+        rightPanel?.classList.remove('mobile-open');
+        overlay?.classList.remove('active');
+        document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    function openRight(tabId) {
+        // Activate the right tab
+        document.querySelectorAll('.rpanel-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.rpanel-content').forEach(c => { c.classList.remove('active'); c.classList.add('hidden') });
+        const tab = document.querySelector(`[data-tab="${tabId}"]`);
+        if (tab) tab.classList.add('active');
+        const panel = $(tabId);
+        if (panel) { panel.classList.remove('hidden'); panel.classList.add('active') }
+        rightPanel?.classList.add('mobile-open');
+        leftSidebar?.classList.remove('mobile-open');
+        overlay?.classList.add('active');
+    }
+
+    // Overlay click → close all
+    overlay?.addEventListener('click', closeDrawers);
+
+    // Files button → open left sidebar
+    $('mnav-files')?.addEventListener('click', () => {
+        const alreadyOpen = leftSidebar?.classList.contains('mobile-open');
+        closeDrawers();
+        if (!alreadyOpen) {
+            leftSidebar?.classList.add('mobile-open');
+            overlay?.classList.add('active');
+            $('mnav-files')?.classList.add('active');
+        }
+    });
+
+    // Peers → right panel peers tab
+    $('mnav-peers')?.addEventListener('click', () => {
+        const alreadyOpen = rightPanel?.classList.contains('mobile-open') && $('rpanel-peers')?.classList.contains('active');
+        closeDrawers();
+        if (!alreadyOpen) { openRight('rpanel-peers'); $('mnav-peers')?.classList.add('active') }
+    });
+
+    // Chat → right panel chat tab
+    $('mnav-chat')?.addEventListener('click', () => {
+        const alreadyOpen = rightPanel?.classList.contains('mobile-open') && $('rpanel-chat')?.classList.contains('active');
+        closeDrawers();
+        if (!alreadyOpen) { openRight('rpanel-chat'); $('mnav-chat')?.classList.add('active') }
+    });
+
+    // Voice → right panel voice tab
+    $('mnav-voice')?.addEventListener('click', () => {
+        const alreadyOpen = rightPanel?.classList.contains('mobile-open') && $('rpanel-voice')?.classList.contains('active');
+        closeDrawers();
+        if (!alreadyOpen) { openRight('rpanel-voice'); $('mnav-voice')?.classList.add('active') }
+    });
+
+    // Leave
+    $('mnav-leave')?.addEventListener('click', () => {
+        closeDrawers();
+        $('btn-leave-room')?.click();
+    });
+
+    // Update voice nav btn when in voice channel
+    const origJoin = joinVoice;
+    // Patch: update mobile nav voice button active state after join/leave
+    // We use a MutationObserver on the voice-badge instead
+    const observer = new MutationObserver(() => {
+        const inVoice = voice.inChannel;
+        $('mnav-voice')?.style && ($('mnav-voice').style.color = inVoice ? 'var(--accent-green)' : '');
+    });
+    const badge = $('voice-topbar-badge');
+    if (badge) observer.observe(badge, { attributes: true, attributeFilter: ['class'] });
+}
 
