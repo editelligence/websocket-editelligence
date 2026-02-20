@@ -1,336 +1,940 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CollabShare — Real-Time File Collaboration</title>
-  <meta name="description" content="Share files instantly with anyone. Real-time collaborative file viewing and editing with zero setup required." />
+  <title>VSAT — Collaborative Workspace Platform</title>
+  <meta name="description"
+    content="Enterprise-grade collaborative workspace with real-time canvas, whiteboard, code editor, and P2P sync." />
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Monaco loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+  <script>require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });</script>
+
+  <!-- PeerJS -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-  <!-- ═══════════════════ LANDING SCREEN ═══════════════════ -->
+  <!-- ═══════════════ LANDING PAGE ═══════════════ -->
   <div id="screen-landing" class="screen active">
-    <div class="bg-orbs">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
+
+    <!-- Animated Background -->
+    <div class="bg-mesh">
+      <div class="mesh-gradient"></div>
+      <div class="mesh-grid"></div>
+      <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+      </div>
     </div>
 
-    <nav class="nav">
-      <div class="logo">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <rect width="28" height="28" rx="8" fill="url(#logoGrad)"/>
-          <path d="M8 14l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <defs>
-            <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
-              <stop offset="0%" stop-color="#7c3aed"/>
-              <stop offset="100%" stop-color="#2563eb"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <span>CollabShare</span>
+    <!-- Navigation -->
+    <nav class="nav" id="landing-nav">
+      <div class="nav-left">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="url(#logoGrad)" stroke-width="1.5" stroke-linejoin="round" />
+              <path d="M2 17l10 5 10-5" stroke="url(#logoGrad)" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <path d="M2 12l10 5 10-5" stroke="url(#logoGrad)" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <defs>
+                <linearGradient id="logoGrad" x1="2" y1="2" x2="22" y2="22">
+                  <stop stop-color="#a78bfa" />
+                  <stop offset="1" stop-color="#60a5fa" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="logo-text">VSAT</span>
+          <span class="logo-badge">PRO</span>
+        </div>
       </div>
-      <div class="nav-badge">P2P · No Server</div>
+      <div class="nav-center">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+      </div>
+      <div class="nav-right">
+        <div class="nav-status">
+          <span class="pulse-dot"></span>
+          <span>P2P · Encrypted</span>
+        </div>
+      </div>
     </nav>
 
+    <!-- Hero Section -->
     <main class="landing-main">
-      <div class="hero">
-        <div class="hero-tag">
-          <span class="pulse-dot"></span>
-          Peer-to-Peer · End-to-End Direct
-        </div>
-        <h1 class="hero-title">
-          Share Files.<br/>
-          <span class="gradient-text">Collaborate in Real‑Time.</span>
-        </h1>
-        <p class="hero-sub">
-          Upload any file, share a 6-character code, and collaborate instantly.<br/>
-          Changes sync live across all connected peers — no account needed.
-        </p>
-      </div>
-
-      <div class="action-cards">
-        <!-- CREATE ROOM -->
-        <div class="card card-create" id="card-create">
-          <div class="card-icon-wrap">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <section class="hero-section">
+        <div class="hero-content">
+          <div class="hero-eyebrow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
             </svg>
+            <span>Next-Gen Collaboration · Zero Setup · Fully P2P</span>
           </div>
-          <h2>Create a Room</h2>
-          <p>Upload a file and get a shareable room code instantly.</p>
-
-          <div class="drop-zone" id="drop-zone">
-            <input type="file" id="file-input" hidden />
-            <div class="drop-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 8l-4-4-4 4M12 4v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+          <h1 class="hero-title">
+            Create, Draw &<br />
+            <span class="gradient-text">Collaborate Live</span>
+          </h1>
+          <p class="hero-subtitle">
+            An enterprise-grade workspace where teams can code, sketch on infinite canvases, present slides, and
+            collaborate in real time — all peer-to-peer with zero servers or accounts.
+          </p>
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-value">0ms</span>
+              <span class="stat-label">Server Latency</span>
             </div>
-            <p class="drop-text">Drop your file here<br/><span>or click to browse</span></p>
-            <div class="drop-hint">Supports text, images, PDFs, code files &amp; more</div>
-          </div>
-
-          <div class="file-selected hidden" id="file-selected">
-            <div class="file-thumb" id="file-thumb"></div>
-            <div class="file-info">
-              <span class="file-name" id="file-name-display"></span>
-              <span class="file-size" id="file-size-display"></span>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-value">E2E</span>
+              <span class="stat-label">Encrypted</span>
             </div>
-            <button class="btn-clear" id="btn-clear-file" title="Remove file">×</button>
-          </div>
-
-          <button class="btn btn-primary" id="btn-create" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            Create Room &amp; Share
-          </button>
-        </div>
-
-        <div class="card-divider">
-          <span>or</span>
-        </div>
-
-        <!-- JOIN ROOM -->
-        <div class="card card-join" id="card-join">
-          <div class="card-icon-wrap card-icon-join">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <polyline points="10 17 15 12 10 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="15" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h2>Join a Room</h2>
-          <p>Enter the 6-character code to access the shared file.</p>
-
-          <div class="code-input-wrap">
-            <label for="room-code-input">Room Code</label>
-            <div class="code-boxes" id="code-boxes">
-              <input class="code-box" maxlength="1" data-index="0" id="code-0" autocomplete="off" spellcheck="false"/>
-              <input class="code-box" maxlength="1" data-index="1" id="code-1" autocomplete="off" spellcheck="false"/>
-              <input class="code-box" maxlength="1" data-index="2" id="code-2" autocomplete="off" spellcheck="false"/>
-              <span class="code-sep">·</span>
-              <input class="code-box" maxlength="1" data-index="3" id="code-3" autocomplete="off" spellcheck="false"/>
-              <input class="code-box" maxlength="1" data-index="4" id="code-4" autocomplete="off" spellcheck="false"/>
-              <input class="code-box" maxlength="1" data-index="5" id="code-5" autocomplete="off" spellcheck="false"/>
-            </div>
-          </div>
-
-          <button class="btn btn-secondary" id="btn-join" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-              <polyline points="12 8 16 12 12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            Join Room
-          </button>
-
-          <div class="join-status hidden" id="join-status">
-            <div class="spinner"></div>
-            <span id="join-status-text">Connecting to peer…</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="features-row">
-        <div class="feature">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-          <span>Direct P2P - files never touch a server</span>
-        </div>
-        <div class="feature">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <span>Real-time sync in milliseconds</span>
-        </div>
-        <div class="feature">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <span>Works in any modern browser</span>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <!-- ═══════════════════ ROOM SCREEN ═══════════════════ -->
-  <div id="screen-room" class="screen">
-    <div class="room-header">
-      <div class="logo">
-        <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-          <rect width="28" height="28" rx="8" fill="url(#logoGrad2)"/>
-          <path d="M8 14l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <defs>
-            <linearGradient id="logoGrad2" x1="0" y1="0" x2="28" y2="28">
-              <stop offset="0%" stop-color="#7c3aed"/>
-              <stop offset="100%" stop-color="#2563eb"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <span>CollabShare</span>
-      </div>
-
-      <div class="room-meta">
-        <div class="room-code-badge">
-          <span class="room-code-label">Room Code</span>
-          <span class="room-code-value" id="room-code-display">——</span>
-          <button class="btn-copy" id="btn-copy-code" title="Copy code">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/></svg>
-          </button>
-        </div>
-        <div class="peers-indicator">
-          <span class="peer-dot active"></span>
-          <span id="peer-count">1 peer</span>
-        </div>
-      </div>
-
-      <div class="room-actions">
-        <button class="btn btn-sm" id="btn-change-file">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Change File
-        </button>
-        <input type="file" id="file-input-room" hidden />
-        <button class="btn btn-sm btn-danger" id="btn-leave">Leave</button>
-      </div>
-    </div>
-
-    <div class="room-body">
-      <!-- SIDEBAR -->
-      <aside class="sidebar">
-        <div class="sidebar-file-info">
-          <div class="sidebar-file-icon" id="sidebar-file-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5"/></svg>
-          </div>
-          <div>
-            <div class="sidebar-file-name" id="sidebar-file-name">No file</div>
-            <div class="sidebar-file-size" id="sidebar-file-size">—</div>
-          </div>
-        </div>
-
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Status</div>
-          <div class="status-item">
-            <span class="status-dot" id="conn-dot"></span>
-            <span id="conn-status">Waiting…</span>
-          </div>
-        </div>
-
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Connected Peers</div>
-          <div id="peers-list" class="peers-list">
-            <div class="peer-item self">
-              <span class="peer-avatar">You</span>
-              <span class="peer-label">You (Host)</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Actions</div>
-          <button class="btn-sidebar-action" id="btn-download">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Download File
-          </button>
-        </div>
-
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">Share Link</div>
-          <div class="share-link-box">
-            <input type="text" class="share-link-input" id="share-link-input" readonly />
-            <button class="btn-copy-link" id="btn-copy-link" title="Copy link">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/></svg>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <!-- VIEWER PANEL -->
-      <section class="viewer-panel">
-        <div class="viewer-toolbar">
-          <div class="viewer-file-label" id="viewer-file-label">No file loaded</div>
-          <div class="viewer-toolbar-right">
-            <div class="sync-indicator hidden" id="sync-indicator">
-              <div class="spinner-small"></div>
-              <span>Syncing…</span>
-            </div>
-            <div class="save-indicator hidden" id="save-indicator">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>Saved</span>
-            </div>
-            <div class="viewer-mode-tabs">
-              <button class="mode-tab active" data-mode="view" id="tab-view">View</button>
-              <button class="mode-tab" data-mode="edit" id="tab-edit">Edit</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="viewer-content" id="viewer-content">
-          <div class="viewer-empty" id="viewer-empty">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" opacity="0.3">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1"/>
-              <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1"/>
-            </svg>
-            <p>Waiting for file…</p>
-          </div>
-
-          <!-- Text / Code viewer -->
-          <div class="text-viewer hidden" id="text-viewer">
-            <textarea class="text-editor" id="text-editor" spellcheck="false" placeholder="File content will appear here…"></textarea>
-          </div>
-
-          <!-- Image viewer -->
-          <div class="image-viewer hidden" id="image-viewer">
-            <img id="image-preview" alt="Shared image" />
-          </div>
-
-          <!-- PDF viewer -->
-          <div class="pdf-viewer hidden" id="pdf-viewer">
-            <embed id="pdf-embed" type="application/pdf" />
-          </div>
-
-          <!-- Binary / unsupported viewer -->
-          <div class="binary-viewer hidden" id="binary-viewer">
-            <div class="binary-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5"/>
-                <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-            </div>
-            <div class="binary-info">
-              <h3 id="binary-file-name">file.bin</h3>
-              <p id="binary-file-desc">This file type cannot be previewed directly.</p>
-              <button class="btn btn-primary" id="btn-download-binary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Download File
-              </button>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-value">∞</span>
+              <span class="stat-label">Canvas Size</span>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- Action Cards Section -->
+      <section class="action-section">
+        <div class="action-cards">
+
+          <!-- CREATE WORKSPACE -->
+          <div class="card card-create" id="card-create">
+            <div class="card-glow"></div>
+            <div class="card-header">
+              <div class="card-icon-wrap">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <div>
+                <h2>Create Workspace</h2>
+                <p class="card-desc">Start a new collaborative session</p>
+              </div>
+            </div>
+
+            <div class="drop-zone" id="drop-zone">
+              <svg class="drop-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" />
+                <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+                <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              <p class="drop-text">Drop files here or <span>browse</span></p>
+              <p class="drop-hint">Up to 20 files, max 5 MB each</p>
+            </div>
+            <input type="file" id="file-input" multiple style="display:none" accept="*/*" />
+            <div id="selected-files-list" class="selected-files-list hidden"></div>
+
+            <div class="input-group">
+              <label class="input-label" for="display-name-create">Display Name</label>
+              <input type="text" id="display-name-create" class="text-input" placeholder="Enter your name (Host)"
+                maxlength="20" />
+            </div>
+            <button id="btn-create" class="btn btn-primary btn-lg">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              Create Workspace
+            </button>
+          </div>
+
+          <div class="card-divider">
+            <span>OR</span>
+          </div>
+
+          <!-- JOIN WORKSPACE -->
+          <div class="card card-join" id="card-join">
+            <div class="card-glow card-glow-blue"></div>
+            <div class="card-header">
+              <div class="card-icon-wrap card-icon-join">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" />
+                  <polyline points="10 17 15 12 10 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <line x1="15" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </div>
+              <div>
+                <h2>Join a Room</h2>
+                <p class="card-desc">Enter an existing workspace</p>
+              </div>
+            </div>
+
+            <div class="code-input-wrap">
+              <label class="input-label">Room Code</label>
+              <div class="code-boxes">
+                <input class="code-box" maxlength="1" autocomplete="off" spellcheck="false" />
+                <input class="code-box" maxlength="1" autocomplete="off" spellcheck="false" />
+                <input class="code-box" maxlength="1" autocomplete="off" spellcheck="false" />
+                <span class="code-sep">—</span>
+                <input class="code-box" maxlength="1" autocomplete="off" spellcheck="false" />
+                <input class="code-box" maxlength="1" autocomplete="off" spellcheck="false" />
+                <input class="code-box" maxlength="1" autocomplete="off" spellcheck="false" />
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="input-label" for="display-name-join">Display Name</label>
+              <input type="text" id="display-name-join" class="text-input" placeholder="Enter your name (Guest)"
+                maxlength="20" />
+            </div>
+
+            <button id="btn-join" class="btn btn-accent btn-lg" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" />
+                <polyline points="10 17 15 12 10 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+                <line x1="15" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              Join Workspace
+            </button>
+            <div id="join-status" class="join-status hidden">
+              <div class="spinner"></div>
+              <span id="join-status-text">Connecting…</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="features-section" id="features">
+        <h2 class="section-title">Powerful Features</h2>
+        <p class="section-subtitle">Everything you need for seamless collaboration</p>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon fi-canvas">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" />
+                <path d="M3 9h18M9 3v18" stroke="currentColor" stroke-width="1.5" />
+              </svg>
+            </div>
+            <h3>Infinite Canvas</h3>
+            <p>Draw, sketch, and diagram on a boundless whiteboard with tools for pen, shapes, text, and images.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon fi-slides">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+                <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </div>
+            <h3>Slide Presentations</h3>
+            <p>Create interactive slide decks with canvas support. Add annotations, drawings, and media in real time.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon fi-code">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <polyline points="16 18 22 12 16 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+                <polyline points="8 6 2 12 8 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+                <line x1="14" y1="4" x2="10" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </div>
+            <h3>Code Editor</h3>
+            <p>Monaco Editor (VS Code core) with 30+ languages, syntax highlighting, IntelliSense and real-time sync.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon fi-live">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" />
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                <path d="M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </div>
+            <h3>Real-Time Cursors</h3>
+            <p>See exactly where your collaborators are working with live cursor tracking and presence indicators.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon fi-dots">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" />
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4" />
+                <path d="M12 4v2M12 18v2M4 12h2M18 12h2" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" />
+              </svg>
+            </div>
+            <h3>Interactive Dots</h3>
+            <p>Place dots on canvas that link to files. Click any dot to open and edit the associated file instantly.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon fi-secure">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.5" />
+                <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                <circle cx="12" cy="16" r="1" fill="currentColor" />
+              </svg>
+            </div>
+            <h3>Zero Trust Security</h3>
+            <p>Direct peer-to-peer connections. No server ever sees your data. Role-based access control built-in.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works -->
+      <section class="how-section" id="how-it-works">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Get started in three simple steps</p>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">01</div>
+            <h3>Create or Join</h3>
+            <p>Upload files to start a workspace or enter a room code to join an existing one. No sign-up required.</p>
+          </div>
+          <div class="step-connector">
+            <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
+              <path d="M0 12h36M30 6l6 6-6 6" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="step-card">
+            <div class="step-number">02</div>
+            <h3>Collaborate</h3>
+            <p>Code, draw on canvas, create slides, and add interactive markers. All changes sync instantly via WebRTC.
+            </p>
+          </div>
+          <div class="step-connector">
+            <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
+              <path d="M0 12h36M30 6l6 6-6 6" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="step-card">
+            <div class="step-number">03</div>
+            <h3>Present & Share</h3>
+            <p>Use slide mode to present your work. Export canvases, download files, or share the room code with anyone.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="landing-footer">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="logo">
+              <div class="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="url(#fGrad)" stroke-width="1.5" stroke-linejoin="round" />
+                  <path d="M2 17l10 5 10-5" stroke="url(#fGrad)" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <path d="M2 12l10 5 10-5" stroke="url(#fGrad)" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <defs>
+                    <linearGradient id="fGrad" x1="2" y1="2" x2="22" y2="22">
+                      <stop stop-color="#a78bfa" />
+                      <stop offset="1" stop-color="#60a5fa" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <span class="logo-text">VSAT</span>
+            </div>
+            <p>Enterprise-grade P2P collaboration platform.</p>
+          </div>
+          <div class="footer-info">
+            <span>Built with WebRTC & PeerJS</span>
+            <span>·</span>
+            <span>No data stored on servers</span>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ═══════════════ WORKSPACE (IDE + CANVAS) ═══════════════ -->
+  <div id="screen-workspace" class="screen">
+
+    <!-- TOP BAR -->
+    <div id="ws-topbar">
+      <div class="topbar-left">
+        <div class="logo logo-sm topbar-logo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="url(#tGrad)" stroke-width="1.5" stroke-linejoin="round" />
+            <path d="M2 17l10 5 10-5" stroke="url(#tGrad)" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <path d="M2 12l10 5 10-5" stroke="url(#tGrad)" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <defs>
+              <linearGradient id="tGrad" x1="2" y1="2" x2="22" y2="22">
+                <stop stop-color="#a78bfa" />
+                <stop offset="1" stop-color="#60a5fa" />
+              </linearGradient>
+            </defs>
+          </svg>
+          VSAT
+        </div>
+
+        <!-- View Mode Tabs -->
+        <div class="view-tabs" id="view-tabs">
+          <button class="view-tab active" data-view="editor" id="tab-editor">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <polyline points="16 18 22 12 16 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <polyline points="8 6 2 12 8 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Editor
+          </button>
+          <button class="view-tab" data-view="canvas" id="tab-canvas">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 19l7-7 3 3-7 7-3-3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+              <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" stroke="currentColor" stroke-width="1.5"
+                stroke-linejoin="round" />
+              <path d="M2 2l7.586 7.586" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              <circle cx="11" cy="11" r="2" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+            Canvas
+          </button>
+          <button class="view-tab" data-view="slides" id="tab-slides">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+              <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            Slides
+          </button>
+        </div>
+
+        <div id="file-tabs" class="file-tabs"></div>
+        <button class="tab-add-btn" id="btn-new-file" title="New File">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="topbar-center">
+        <div class="room-pill">
+          <span class="room-pill-label">ROOM</span>
+          <span id="room-code-display" class="room-pill-code">──────</span>
+          <button class="icon-btn icon-btn-sm" id="btn-copy-code" title="Copy code">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="peers-badge" id="peers-badge-top">
+          <span class="peer-dot"></span>
+          <span id="peer-count-label">1 peer</span>
+        </div>
+        <button class="icon-btn topbar-btn" id="btn-toggle-right" title="Toggle panel">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8" />
+            <line x1="16" y1="3" x2="16" y2="21" stroke="currentColor" stroke-width="1.8" />
+          </svg>
+        </button>
+        <button class="icon-btn topbar-btn btn-danger-subtle" id="btn-leave-room" title="Leave room">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" />
+            <polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN BODY -->
+    <div id="ws-body">
+
+      <!-- ACTIVITY BAR -->
+      <div id="activity-bar">
+        <button class="activity-btn active" data-panel="panel-explorer" title="Files">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" stroke="currentColor"
+              stroke-width="1.5" />
+          </svg>
+        </button>
+        <button class="activity-btn" data-panel="panel-search" title="Search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5" />
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </button>
+        <button class="activity-btn" data-panel="panel-slides-manager" title="Slides">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+            <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </button>
+        <div class="activity-spacer"></div>
+        <button class="activity-btn" data-panel="panel-settings" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" />
+            <path
+              d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+              stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- LEFT SIDEBAR -->
+      <div id="left-sidebar">
+        <!-- Explorer Panel -->
+        <div id="panel-explorer" class="sidebar-panel active">
+          <div class="sidebar-panel-header">
+            <span>Explorer</span>
+            <button class="icon-btn-sm" id="btn-upload-file" title="Upload file">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" />
+                <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round" />
+                <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </button>
+            <input type="file" id="file-input-sidebar" multiple style="display:none" accept="*/*" />
+          </div>
+          <div id="file-tree" class="file-tree"></div>
+        </div>
+
+        <!-- Search Panel -->
+        <div id="panel-search" class="sidebar-panel">
+          <div class="sidebar-panel-header"><span>Search</span></div>
+          <div class="search-box-wrap">
+            <input type="text" id="search-input" class="search-input" placeholder="Search in files…" />
+          </div>
+          <div id="search-results" class="search-results"></div>
+        </div>
+
+        <!-- Slides Manager Panel -->
+        <div id="panel-slides-manager" class="sidebar-panel">
+          <div class="sidebar-panel-header">
+            <span>Slides</span>
+            <button class="icon-btn-sm" id="btn-add-slide" title="Add Slide">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div id="slides-list" class="slides-list"></div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div id="panel-settings" class="sidebar-panel">
+          <div class="sidebar-panel-header"><span>Room Settings</span></div>
+          <div class="settings-content">
+            <p id="settings-host-only" class="setting-note" style="display:none">Only the host can change settings.</p>
+            <div id="settings-controls">
+              <div class="setting-row">
+                <div class="setting-label">
+                  <span>Allow Downloads</span>
+                  <span class="setting-desc">Guests can download files</span>
+                </div>
+                <label class="toggle"><input type="checkbox" id="toggle-download" checked /><span
+                    class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <div class="setting-label">
+                  <span>Default Role</span>
+                  <span class="setting-desc">For new joiners</span>
+                </div>
+                <select id="select-default-role" class="setting-select">
+                  <option value="editor">Editor</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              </div>
+              <div>
+                <div class="sidebar-panel-header" style="padding-left:0;border:none;margin-bottom:6px"><span>Invite
+                    Link</span></div>
+                <div class="share-link-row">
+                  <input type="text" id="share-link-input" class="share-link-input" readonly placeholder="—" />
+                  <button class="btn btn-ghost btn-sm" id="btn-copy-link">Copy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT AREA -->
+      <div id="content-area">
+
+        <!-- EDITOR VIEW -->
+        <div id="view-editor" class="view-panel active">
+          <div id="monaco-container" class="hidden" style="height:100%;width:100%"></div>
+          <div id="editor-empty-state" class="empty-state">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" style="color:var(--text-3)">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor"
+                stroke-width="1.2" />
+              <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.2" />
+            </svg>
+            <h3>No File Open</h3>
+            <p>Open a file from the explorer or upload files to get started</p>
+          </div>
+        </div>
+
+        <!-- CANVAS VIEW -->
+        <div id="view-canvas" class="view-panel">
+          <!-- Canvas Toolbar -->
+          <div id="canvas-toolbar" class="canvas-toolbar">
+            <div class="toolbar-group">
+              <button class="tool-btn active" data-tool="select" title="Select (V)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" stroke="currentColor" stroke-width="1.5"
+                    stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button class="tool-btn" data-tool="pen" title="Pen (P)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 19l7-7 3 3-7 7-3-3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" stroke="currentColor" stroke-width="1.5"
+                    stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button class="tool-btn" data-tool="line" title="Line (L)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <line x1="5" y1="19" x2="19" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+              </button>
+              <button class="tool-btn" data-tool="rect" title="Rectangle (R)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" />
+                </svg>
+              </button>
+              <button class="tool-btn" data-tool="circle" title="Circle (C)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
+                </svg>
+              </button>
+              <button class="tool-btn" data-tool="text" title="Text (T)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="4 7 4 4 20 4 20 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <line x1="12" y1="4" x2="12" y2="20" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" />
+                  <line x1="8" y1="20" x2="16" y2="20" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" />
+                </svg>
+              </button>
+              <button class="tool-btn" data-tool="image" title="Image (I)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" />
+                  <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.5" />
+                  <polyline points="21 15 16 10 5 21" stroke="currentColor" stroke-width="1.5"
+                    stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button class="tool-btn" data-tool="dot" title="Interactive Dot (D)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.3" />
+                  <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5" />
+                  <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" />
+                </svg>
+              </button>
+              <button class="tool-btn" data-tool="eraser" title="Eraser (E)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 20H7L3 16l8-8 9 9-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <path d="M6 11l9 9" stroke="currentColor" stroke-width="1.5" />
+                </svg>
+              </button>
+            </div>
+            <div class="toolbar-separator"></div>
+            <div class="toolbar-group">
+              <input type="color" id="canvas-color" class="color-picker" value="#a78bfa" title="Color" />
+              <select id="canvas-stroke-width" class="toolbar-select" title="Stroke Width">
+                <option value="2">2px</option>
+                <option value="3" selected>3px</option>
+                <option value="5">5px</option>
+                <option value="8">8px</option>
+                <option value="12">12px</option>
+              </select>
+            </div>
+            <div class="toolbar-separator"></div>
+            <div class="toolbar-group">
+              <button class="tool-btn" id="btn-canvas-undo" title="Undo (Ctrl+Z)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="1 4 1 10 7 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <path d="M3.51 15a9 9 0 102.13-9.36L1 10" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" />
+                </svg>
+              </button>
+              <button class="tool-btn" id="btn-canvas-redo" title="Redo (Ctrl+Y)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="23 4 23 10 17 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" />
+                </svg>
+              </button>
+              <button class="tool-btn" id="btn-canvas-clear" title="Clear Canvas">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button class="tool-btn" id="btn-canvas-export" title="Export as PNG">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" />
+                  <polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div class="toolbar-spacer"></div>
+            <div class="toolbar-group">
+              <span class="canvas-zoom-label" id="canvas-zoom-label">100%</span>
+              <button class="tool-btn" id="btn-zoom-in" title="Zoom In">+</button>
+              <button class="tool-btn" id="btn-zoom-out" title="Zoom Out">−</button>
+              <button class="tool-btn" id="btn-zoom-fit" title="Fit to Screen">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <!-- The Canvas -->
+          <div id="canvas-wrapper" class="canvas-wrapper">
+            <canvas id="main-canvas"></canvas>
+            <div id="canvas-cursors-layer" class="canvas-cursors-layer"></div>
+          </div>
+          <input type="file" id="canvas-image-input" style="display:none" accept="image/*" />
+        </div>
+
+        <!-- SLIDES VIEW -->
+        <div id="view-slides" class="view-panel">
+          <div id="slides-toolbar" class="slides-toolbar">
+            <button class="tool-btn" id="btn-slide-prev" title="Previous Slide">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <polyline points="15 18 9 12 15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+            <span id="slide-counter" class="slide-counter">Slide 1 / 1</span>
+            <button class="tool-btn" id="btn-slide-next" title="Next Slide">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <polyline points="9 18 15 12 9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+            <div class="toolbar-separator"></div>
+            <button class="tool-btn" id="btn-slide-add" title="Add Slide">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </button>
+            <button class="tool-btn" id="btn-slide-delete" title="Delete Current Slide">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor"
+                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+            <button class="tool-btn" id="btn-slide-fullscreen" title="Present Fullscreen">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"
+                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+          <div id="slide-canvas-wrapper" class="slide-canvas-wrapper">
+            <canvas id="slide-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div id="right-panel">
+        <div class="right-panel-tabs">
+          <button class="rpanel-tab active" data-tab="rpanel-peers">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" />
+              <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8" />
+            </svg>
+            Peers
+          </button>
+          <button class="rpanel-tab" data-tab="rpanel-chat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor"
+                stroke-width="1.8" stroke-linejoin="round" />
+            </svg>
+            Chat
+          </button>
+        </div>
+
+        <div id="rpanel-peers" class="rpanel-content active">
+          <p class="rpanel-section-title">Connected Peers</p>
+          <div id="peers-list" class="peers-list"></div>
+        </div>
+
+        <div id="rpanel-chat" class="rpanel-content hidden">
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Message…" maxlength="500" />
+            <button class="btn-send" id="btn-send-chat" title="Send">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <line x1="22" y1="2" x2="11" y2="13" stroke="white" stroke-width="2" stroke-linecap="round" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" stroke="white" stroke-width="1.8" fill="none" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div id="status-bar">
+      <div class="status-left">
+        <div class="status-item">
+          <span class="status-dot offline" id="status-conn-dot"></span>
+          <span id="status-conn-text">Offline</span>
+        </div>
+        <span class="status-sep">·</span>
+        <span id="status-role-badge" class="status-item">viewer</span>
+      </div>
+      <div class="status-center">
+        <span class="status-item" id="status-filename">No file</span>
+        <span class="status-sep">·</span>
+        <span class="status-item" id="status-view-mode">Editor</span>
+      </div>
+      <div class="status-right">
+        <span class="status-item" id="status-lang">Plain Text</span>
+        <span class="status-sep">·</span>
+        <span class="status-item" id="status-cursor">Ln 1, Col 1</span>
+        <span class="status-sep">·</span>
+        <span class="status-item" id="status-sync">Ready</span>
+      </div>
     </div>
   </div>
 
-  <!-- ═══════════════════ TOAST ═══════════════════ -->
-  <div id="toast-container"></div>
+  <!-- ═══ CONTEXT MENU ═══ -->
+  <div id="context-menu" class="context-menu hidden">
+    <button class="ctx-item" id="ctx-rename">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" />
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+      Rename
+    </button>
+    <button class="ctx-item" id="ctx-download">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" />
+        <polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+          stroke-linejoin="round" />
+        <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+      Download
+    </button>
+    <button class="ctx-item ctx-danger" id="ctx-delete">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+        <polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+          stroke-linejoin="round" />
+        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      Delete
+    </button>
+  </div>
 
-  <!-- ═══════════════════ MODAL ═══════════════════ -->
-  <div class="modal-backdrop hidden" id="modal-backdrop">
-    <div class="modal" id="modal">
+  <!-- ═══ CONFIRM MODAL ═══ -->
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal">
       <div class="modal-icon" id="modal-icon"></div>
-      <h2 id="modal-title">Modal</h2>
-      <p id="modal-body">Content</p>
+      <h2 id="modal-title"></h2>
+      <p id="modal-body"></p>
       <div class="modal-actions">
-        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
         <button class="btn btn-primary" id="modal-confirm">OK</button>
       </div>
     </div>
   </div>
 
-  <!-- PeerJS CDN -->
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <!-- ═══ NEW FILE MODAL ═══ -->
+  <div id="newfile-backdrop" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-icon">📄</div>
+      <h2>New File</h2>
+      <p>Enter a filename with extension (e.g. <code>app.js</code>)</p>
+      <input type="text" id="newfile-input" class="text-input" placeholder="filename.ext" style="margin-bottom:20px"
+        maxlength="80" autocomplete="off" />
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="newfile-cancel">Cancel</button>
+        <button class="btn btn-primary" id="newfile-confirm">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DOT FILE LINK MODAL ═══ -->
+  <div id="dot-modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-icon">📌</div>
+      <h2>Link File to Dot</h2>
+      <p>Select a file to link to this interactive dot</p>
+      <select id="dot-file-select" class="setting-select" style="width:100%;margin-bottom:16px">
+        <option value="">— Select a file —</option>
+      </select>
+      <input type="text" id="dot-label-input" class="text-input" placeholder="Dot label (optional)"
+        style="margin-bottom:20px" maxlength="40" />
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="dot-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="dot-modal-confirm">Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Canvas Text Input ═══ -->
+  <div id="canvas-text-overlay" class="canvas-text-overlay hidden">
+    <textarea id="canvas-text-input" class="canvas-text-input" placeholder="Type here..." rows="3"></textarea>
+    <div class="canvas-text-actions">
+      <button class="btn btn-ghost btn-sm" id="canvas-text-cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="canvas-text-confirm">Add</button>
+    </div>
+  </div>
+
+  <!-- ═══ TOASTS ═══ -->
+  <div id="toast-container"></div>
+
   <script src="app.js"></script>
 </body>
+
 </html>
